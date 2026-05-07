@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="index_final.html" />
+    <File Path="login.html" />
+    <File Path="Note.txt" />
+  </Folder>
+  <Project Path="CalendarApp.Api/CalendarApp.Api.csproj" />
+  <Project Path="CalendarApp.Domain/CalendarApp.Domain.csproj" />
+  <Project Path="CalendarApp.DTOs/CalendarApp.DTOs.csproj" />
+</Solution>

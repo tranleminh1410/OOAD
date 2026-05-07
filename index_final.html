@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Quản Lý Lịch Trình - Giao Diện Hoàn Chỉnh</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#004f96",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#0067c0",
+                        "surface": "#f9f9ff",
+                        "on-surface": "#191c21",
+                        "surface-variant": "#e1e2ea",
+                        "on-surface-variant": "#414752"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "title-md": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        .mica-effect {
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+        }
+
+        .mica-surface {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.4);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex custom-scrollbar">
+
+    <aside class="fixed left-0 top-0 h-full w-[280px] border-r border-slate-200/50 bg-slate-50/50 mica-effect flex flex-col p-4 gap-2 z-20">
+        <div class="px-3 py-4 flex flex-col gap-1">
+            <h2 class="text-base font-bold text-slate-800 font-title-md">Điều Hướng</h2>
+            <p class="text-label-sm text-slate-500">Chế độ xem</p>
+        </div>
+        <nav class="flex-1 flex flex-col gap-1" id="navMenu">
+            <a id="btnViewDay" class="flex items-center gap-3 px-3 py-2 bg-slate-200/60 text-blue-600 rounded-md font-medium cursor-pointer transition-all font-body-md" onclick="changeView('day')">
+                <span class="material-symbols-outlined">calendar_view_day</span> Theo Ngày
+            </a>
+            <a id="btnViewWeek" class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-200/40 rounded-md cursor-pointer transition-all font-body-md" onclick="changeView('week')">
+                <span class="material-symbols-outlined">calendar_view_week</span> Theo Tuần
+            </a>
+            <a id="btnViewMonth" class="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-200/40 rounded-md cursor-pointer transition-all font-body-md" onclick="changeView('month')">
+                <span class="material-symbols-outlined">calendar_month</span> Theo Tháng
+            </a>
+        </nav>
+
+        <div class="mt-auto">
+            <div class="p-4 bg-white/60 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold" id="userAvatar">U</div>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-800" id="displayUsername">Người dùng</p>
+                        <p class="text-[11px] text-slate-500">Sinh viên IT - DUT</p>
+                    </div>
+                </div>
+                <!-- Nút Đăng xuất -->
+                <button onclick="logout()" class="w-8 h-8 rounded-full flex items-center justify-center text-red-500 hover:bg-red-100 transition-colors" title="Đăng xuất">
+                    <span class="material-symbols-outlined text-[20px]">logout</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 ml-[280px] flex flex-col min-h-screen relative bg-surface-container-low">
+
+        <header class="sticky top-0 z-10 w-full h-16 px-6 bg-white/70 mica-effect border-b border-slate-200/50 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-4">
+                <h1 class="text-lg font-semibold text-slate-900 font-title-md">Lịch Trình Cá Nhân</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="relative flex items-center">
+                    <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">search</span>
+                    <input id="searchInput" class="pl-10 pr-4 py-1.5 bg-slate-100/80 border-transparent rounded-full w-64 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all outline-none" placeholder="Tìm kiếm lịch trình..." type="text" />
+                </div>
+
+                <button id="btnDiscoverGroups" onclick="openDiscoverModal()" class="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-purple-200 active:scale-95 transition-all duration-150 shadow-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">travel_explore</span> Khám Phá Nhóm
+                </button>
+
+                <button id="btnOpenModal" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold text-sm hover:bg-blue-700 active:scale-95 transition-all duration-150 shadow-sm flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span> Thêm Lịch Trình
+                </button>
+            </div>
+        </header>
+
+        <div class="p-8 pb-16 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+
+            <section class="flex items-end justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-200/50">
+                <div>
+                    <h2 class="font-title-lg text-on-surface">Danh sách sự kiện</h2>
+                    <p class="font-body-md text-slate-500 mt-1" id="eventCountText">Đang tải dữ liệu...</p>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button onclick="navigateDate(-1)" class="w-8 h-8 flex items-center justify-center rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">chevron_left</span>
+                    </button>
+                    <div class="text-center min-w-[150px]">
+                        <span id="dateRangeDisplay" class="font-semibold text-slate-800 text-sm">...</span>
+                    </div>
+                    <button onclick="navigateDate(1)" class="w-8 h-8 flex items-center justify-center rounded bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+                        <span class="material-symbols-outlined text-[20px]">chevron_right</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="reminderSection" class="hidden flex-col gap-4">
+                <h2 class="text-lg font-bold text-slate-800 font-title-md flex items-center gap-2">
+                    <span class="material-symbols-outlined text-amber-500">notifications_active</span>
+                    Sự Kiện Có Nhắc Nhở
+                </h2>
+                <div class="max-h-[260px] overflow-y-auto pr-2 pb-2 custom-scrollbar">
+                    <div id="reminderContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white border border-slate-200/50 rounded-xl shadow-sm overflow-hidden flex flex-col">
+                <div class="max-h-[450px] overflow-y-auto custom-scrollbar relative">
+
+                    <table class="w-full text-left border-collapse border-b border-slate-100">
+                        <thead class="sticky top-0 bg-slate-50/95 backdrop-blur z-10 shadow-sm">
+                            <tr>
+                                <th class="px-6 py-4 font-label-sm text-slate-500 uppercase tracking-wider border-b border-slate-200">Tên Cuộc Họp / Sự Kiện</th>
+                                <th class="px-6 py-4 font-label-sm text-slate-500 uppercase tracking-wider border-b border-slate-200">Bắt Đầu</th>
+                                <th class="px-6 py-4 font-label-sm text-slate-500 uppercase tracking-wider border-b border-slate-200">Kết Thúc</th>
+                                <th class="px-6 py-4 font-label-sm text-slate-500 uppercase tracking-wider border-b border-slate-200">Địa Điểm</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 font-body-md" id="appointmentTableBody">
+                        </tbody>
+                    </table>
+
+                    <div id="emptyState" class="hidden py-12 flex flex-col items-center justify-center text-slate-400 w-full">
+                        <span class="material-symbols-outlined text-4xl mb-2">event_busy</span>
+                        <p>Không có lịch trình nào trong khoảng thời gian này.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- HỆ THỐNG CUSTOM DIALOG (THAY THẾ ALERT/CONFIRM) -->
+    <div id="sysDialog" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center z-[100] p-6 transition-opacity">
+        <div class="bg-white w-full max-w-[400px] rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all scale-100">
+            <div class="p-8 flex flex-col items-center text-center">
+                <div id="sysDialogIconContainer" class="w-14 h-14 rounded-full flex items-center justify-center mb-4">
+                    <span id="sysDialogIcon" class="material-symbols-outlined text-[32px]"></span>
+                </div>
+                <h3 id="sysDialogTitle" class="text-xl font-bold text-slate-900 mb-2">Tiêu đề</h3>
+                <p id="sysDialogMessage" class="text-sm text-slate-600">Nội dung thông báo...</p>
+            </div>
+            <div class="px-8 py-4 bg-slate-50 border-t border-slate-100 flex gap-3 w-full" id="sysDialogButtons">
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-6">
+        <div class="bg-white w-full max-w-[450px] rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
+            <div class="bg-blue-50/50 px-6 py-5 border-b border-blue-100 flex items-start justify-between relative">
+                <div>
+                    <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1">Chi Tiết Sự Kiện</p>
+                    <h2 id="detailName" class="font-title-md text-[22px] font-bold text-slate-900 leading-tight">Tên Sự Kiện</h2>
+                </div>
+                <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-blue-100 transition-colors absolute top-4 right-4 text-slate-400">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col gap-5">
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0"><span class="material-symbols-outlined text-slate-500">schedule</span></div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Bắt đầu</p>
+                        <p id="detailStart" class="text-sm font-semibold text-slate-800 mt-0.5">...</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0"><span class="material-symbols-outlined text-slate-500">update</span></div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Kết thúc</p>
+                        <p id="detailEnd" class="text-sm font-semibold text-slate-800 mt-0.5">...</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4">
+                    <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0"><span class="material-symbols-outlined text-slate-500">location_on</span></div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Địa điểm</p>
+                        <p id="detailLocation" class="text-sm font-semibold text-slate-800 mt-0.5">...</p>
+                    </div>
+                </div>
+                <div id="detailParticipants" class="flex items-start gap-4 hidden">
+                    <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center border border-purple-100 shrink-0"><span class="material-symbols-outlined text-purple-500">groups</span></div>
+                    <div>
+                        <p class="text-xs text-slate-500 font-medium">Người tham gia</p>
+                        <p id="detailParticipantCount" class="text-sm font-semibold text-slate-800 mt-0.5">...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                <button onclick="deleteAppointment()" class="px-4 py-2 rounded-lg text-red-600 font-medium hover:bg-red-50 transition-all flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[18px]">delete</span> Xóa lịch
+                </button>
+                <button onclick="closeDetailModal()" class="px-6 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-all">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Appointment Modal -->
+    <div id="appointmentModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-6">
+        <div class="mica-surface w-full max-w-[560px] rounded-xl border border-black/5 shadow-2xl overflow-hidden flex flex-col transform transition-all">
+
+            <div class="px-6 py-4 border-b border-slate-200/50 flex items-center justify-between">
+                <div class="flex items-center gap-3 text-slate-900">
+                    <span class="material-symbols-outlined text-primary">event</span>
+                    <h2 class="font-title-md text-[20px] font-semibold">Thêm Lịch Trình Mới</h2>
+                </div>
+                <button id="btnCloseIcon" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="p-6 flex flex-col gap-4 overflow-y-auto">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs font-medium text-slate-500 uppercase">Tên sự kiện</label>
+                    <div class="relative group">
+                        <input id="appointmentName" class="w-full h-11 px-0 bg-transparent border-0 border-b-2 border-slate-300 focus:ring-0 focus:border-primary placeholder:text-slate-400 transition-all text-base" placeholder="Nhập tiêu đề cuộc họp..." type="text" />
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 mt-2">
+                    <label class="text-xs font-medium text-slate-500 uppercase">Địa điểm</label>
+                    <div class="relative flex items-center group">
+                        <span class="material-symbols-outlined absolute left-0 text-slate-400">location_on</span>
+                        <input id="appointmentLocation" class="w-full h-11 pl-8 pr-0 bg-transparent border-0 border-b-2 border-slate-300 focus:ring-0 focus:border-primary placeholder:text-slate-400 transition-all text-sm" placeholder="Nhập địa điểm hoặc link meeting..." type="text" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6 mt-4">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-slate-500 uppercase">Bắt đầu</label>
+                        <div class="flex items-center bg-slate-100/50 rounded-lg pl-3 pr-1 py-2 border border-slate-200/50">
+                            <span class="material-symbols-outlined text-primary mr-2 shrink-0">calendar_today</span>
+                            <input id="appointmentStart" type="datetime-local" class="bg-transparent border-none p-0 focus:ring-0 text-sm flex-1 w-full outline-none cursor-pointer" />
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs font-medium text-slate-500 uppercase">Kết thúc</label>
+                        <div class="flex items-center bg-slate-100/50 rounded-lg pl-3 pr-1 py-2 border border-slate-200/50">
+                            <span class="material-symbols-outlined text-primary mr-2 shrink-0">schedule</span>
+                            <input id="appointmentEnd" type="datetime-local" class="bg-transparent border-none p-0 focus:ring-0 text-sm flex-1 w-full outline-none cursor-pointer" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200 mt-4">
+                    <div class="flex items-center justify-between border-b border-slate-200/60 pb-3">
+                        <div class="flex items-center gap-3">
+                            <input id="is-group" class="w-4 h-4 rounded text-purple-600 focus:ring-purple-600" type="checkbox" />
+                            <label class="text-sm font-semibold text-slate-800" for="is-group">Tạo cuộc họp Nhóm</label>
+                        </div>
+                        <span class="material-symbols-outlined text-purple-500">groups</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <input id="set-reminder" class="w-4 h-4 rounded text-amber-500 focus:ring-amber-500" type="checkbox" />
+                            <label class="text-sm font-semibold text-slate-800" for="set-reminder">Bật nhắc nhở</label>
+                        </div>
+                        <span class="material-symbols-outlined text-amber-500">notifications_active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50/80 border-t border-slate-200/50 flex justify-end items-center gap-4">
+                <button id="btnCancel" class="px-6 h-10 rounded-lg border border-slate-300 text-slate-600 font-semibold hover:bg-slate-100 transition-all active:scale-95">Hủy</button>
+                <button id="btnSave" class="px-8 h-10 rounded-lg bg-primary text-white font-semibold shadow-md hover:bg-blue-700 transition-all active:scale-95">Lưu</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="discoverModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center z-50 p-6">
+        <div class="bg-white w-full max-w-[500px] rounded-2xl shadow-2xl overflow-hidden flex flex-col transform transition-all">
+            <div class="bg-purple-50 px-6 py-4 border-b border-purple-100 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-purple-200 flex items-center justify-center text-purple-700"><span class="material-symbols-outlined text-[18px]">travel_explore</span></div>
+                    <h2 class="font-title-md text-[18px] font-bold text-slate-900">Khám Phá Cuộc Họp Nhóm</h2>
+                </div>
+                <button onclick="closeDiscoverModal()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors text-slate-500">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <div class="p-6 max-h-[400px] overflow-y-auto custom-scrollbar flex flex-col gap-3" id="discoverList">
+                <p class="text-center text-slate-500 text-sm">Đang tải dữ liệu...</p>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button onclick="closeDiscoverModal()" class="px-6 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-all">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT LOGIC -->
+    <script>
+        const sysDialog = document.getElementById('sysDialog');
+        const sysDialogIconContainer = document.getElementById('sysDialogIconContainer');
+        const sysDialogIcon = document.getElementById('sysDialogIcon');
+        const sysDialogTitle = document.getElementById('sysDialogTitle');
+        const sysDialogMessage = document.getElementById('sysDialogMessage');
+        const sysDialogButtons = document.getElementById('sysDialogButtons');
+
+        function showAppDialog(title, message, type) {
+            return new Promise((resolve) => {
+                sysDialogTitle.innerText = title;
+                sysDialogMessage.innerText = message;
+
+                if (type === 'success') {
+                    sysDialogIcon.innerText = 'check_circle';
+                    sysDialogIconContainer.className = 'w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-emerald-100 text-emerald-600';
+                    sysDialogButtons.innerHTML = `<button class="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 transition-all" id="btnSysOk">Tuyệt vời</button>`;
+                } else if (type === 'error') {
+                    sysDialogIcon.innerText = 'error';
+                    sysDialogIconContainer.className = 'w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-red-100 text-red-600';
+                    sysDialogButtons.innerHTML = `<button class="w-full px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-all" id="btnSysOk">Đóng</button>`;
+                } else if (type === 'warning') {
+                    sysDialogIcon.innerText = 'warning';
+                    sysDialogIconContainer.className = 'w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-amber-100 text-amber-500';
+                    sysDialogButtons.innerHTML = `<button class="w-full px-4 py-2 rounded-lg bg-amber-500 text-white font-medium hover:bg-amber-600 transition-all" id="btnSysOk">Đã hiểu</button>`;
+                } else if (type === 'confirm') {
+                    sysDialogIcon.innerText = 'help';
+                    sysDialogIconContainer.className = 'w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-blue-100 text-blue-600';
+                    sysDialogButtons.innerHTML = `
+                                    <button class="flex-1 px-4 py-2 rounded-lg bg-white border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 transition-all" id="btnSysCancel">Hủy</button>
+                                    <button class="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-all" id="btnSysConfirm">Đồng ý</button>
+                                `;
+                }
+
+                sysDialog.classList.remove('hidden');
+
+                if (type === 'confirm') {
+                    document.getElementById('btnSysCancel').onclick = () => { sysDialog.classList.add('hidden'); resolve(false); };
+                    document.getElementById('btnSysConfirm').onclick = () => { sysDialog.classList.add('hidden'); resolve(true); };
+                } else {
+                    document.getElementById('btnSysOk').onclick = () => { sysDialog.classList.add('hidden'); resolve(true); };
+                }
+            });
+        }
+
+
+        let currentView = 'day';
+        let currentDate = new Date();
+        let searchTerm = '';
+        let appointments = [];
+
+        const savedUsername = localStorage.getItem('username');
+        if (savedUsername) {
+            document.getElementById('displayUsername').innerText = savedUsername;
+            document.getElementById('userAvatar').innerText = savedUsername.charAt(0).toUpperCase();
+        }
+
+        async function logout() {
+            const ok = await showAppDialog('Đăng xuất', 'Bạn có chắc chắn muốn đăng xuất khỏi hệ thống không?', 'confirm');
+            if (ok) {
+                localStorage.removeItem('jwt_token');
+                localStorage.removeItem('username');
+
+                window.location.href = 'login.html';
+            }
+        }
+
+        const tableBody = document.getElementById('appointmentTableBody');
+        const emptyState = document.getElementById('emptyState');
+        const eventCountText = document.getElementById('eventCountText');
+        const dateRangeDisplay = document.getElementById('dateRangeDisplay');
+        const searchInput = document.getElementById('searchInput');
+
+        function changeView(view) {
+            currentView = view;
+            document.querySelectorAll('#navMenu a').forEach(el => {
+                el.className = "flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-200/40 rounded-md cursor-pointer transition-all font-body-md";
+            });
+            const activeBtn = document.getElementById(view === 'day' ? 'btnViewDay' : view === 'week' ? 'btnViewWeek' : 'btnViewMonth');
+            activeBtn.className = "flex items-center gap-3 px-3 py-2 bg-slate-200/60 text-blue-600 rounded-md font-medium cursor-pointer transition-all font-body-md";
+            updateDisplay();
+        }
+
+        function navigateDate(direction) {
+            if (currentView === 'day') {
+                currentDate.setDate(currentDate.getDate() + direction);
+            } else if (currentView === 'week') {
+                currentDate.setDate(currentDate.getDate() + (direction * 7));
+            } else if (currentView === 'month') {
+                currentDate.setMonth(currentDate.getMonth() + direction);
+            }
+            updateDisplay();
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            searchTerm = e.target.value.toLowerCase();
+            updateDisplay();
+        });
+
+        async function fetchAppointmentsFromServer() {
+            const token = localStorage.getItem('jwt_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+            try {
+                const response = await fetch('http://localhost:5207/api/Appointment/all', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('jwt_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                if (response.ok) {
+                    const data = await response.json();
+                    appointments = data.map(app => ({
+                        name: app.name,
+                        location: app.location,
+                        start: app.startTime,
+                        end: app.endTime,
+                        isGroup: app.isGroup,
+                        participants: app.participants || [],
+                        hasReminder: app.reminders && app.reminders.length > 0
+                    }));
+                    updateDisplay();
+                }
+            } catch (error) {
+                console.error("Không thể tải dữ liệu:", error);
+            }
+        }
+
+        function updateDisplay() {
+            let startOfRange = new Date(currentDate);
+            let endOfRange = new Date(currentDate);
+            let displayString = "";
+
+            if (currentView === 'day') {
+                startOfRange.setHours(0, 0, 0, 0);
+                endOfRange.setHours(23, 59, 59, 999);
+                displayString = startOfRange.toLocaleDateString('vi-VN');
+            }
+            else if (currentView === 'week') {
+                const day = currentDate.getDay();
+                const diffToMonday = currentDate.getDate() - day + (day === 0 ? -6 : 1);
+                startOfRange = new Date(currentDate.setDate(diffToMonday));
+                startOfRange.setHours(0, 0, 0, 0);
+                endOfRange = new Date(startOfRange);
+                endOfRange.setDate(endOfRange.getDate() + 6);
+                endOfRange.setHours(23, 59, 59, 999);
+                displayString = `${startOfRange.toLocaleDateString('vi-VN').slice(0, 5)} - ${endOfRange.toLocaleDateString('vi-VN')}`;
+            }
+            else if (currentView === 'month') {
+                startOfRange = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+                endOfRange = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
+                displayString = `Tháng ${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+            }
+
+            dateRangeDisplay.innerText = displayString;
+
+            const filteredAppts = appointments.filter(app => {
+                const appStart = new Date(app.start);
+                const isInRange = appStart >= startOfRange && appStart <= endOfRange;
+                const isMatchSearch = app.name.toLowerCase().includes(searchTerm) || app.location.toLowerCase().includes(searchTerm);
+                return isInRange && isMatchSearch;
+            });
+
+            filteredAppts.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+            const reminderSection = document.getElementById('reminderSection');
+            const reminderContainer = document.getElementById('reminderContainer');
+            const reminderAppts = filteredAppts.filter(app => app.hasReminder);
+
+            if (reminderAppts.length === 0) {
+                reminderSection.classList.add('hidden');
+                reminderSection.classList.remove('flex');
+            } else {
+                reminderSection.classList.remove('hidden');
+                reminderSection.classList.add('flex');
+                reminderContainer.innerHTML = '';
+
+                reminderAppts.forEach(app => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-xl border border-amber-200 shadow-sm hover:shadow-md transition-all cursor-pointer border-l-4 border-l-amber-500 group relative overflow-hidden";
+
+                    const startTimeStr = formatTimeAMPM(app.start);
+                    const endTimeStr = formatTimeAMPM(app.end);
+                    const startDateDetail = `${startTimeStr} - ${formatDate(app.start)}`;
+                    const endDateDetail = `${endTimeStr} - ${formatDate(app.end)}`;
+
+                    card.onclick = () => showDetail(app.name, startDateDetail, endDateDetail, app.location, app.isGroup, app.participants, app.start, app.end);
+
+                    card.innerHTML = `
+                                <div class="absolute -right-4 -top-4 w-12 h-12 bg-amber-50 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+                                <div class="relative z-10 flex items-start justify-between mb-3">
+                                    <h3 class="font-bold text-slate-800 line-clamp-1 group-hover:text-amber-600 transition-colors pr-2">${app.name}</h3>
+                                    <span class="material-symbols-outlined text-amber-500 text-[18px]">notifications_active</span>
+                                </div>
+                                <div class="relative z-10 flex flex-col gap-1.5 text-xs text-slate-600">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[16px] text-slate-400">schedule</span>
+                                        <span class="font-medium text-slate-700">${startTimeStr} <span class="font-normal text-slate-500">(${formatDate(app.start)})</span></span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-[16px] text-slate-400">location_on</span>
+                                        <span class="line-clamp-1">${app.location}</span>
+                                    </div>
+                                </div>
+                            `;
+                    reminderContainer.appendChild(card);
+                });
+            }
+
+            tableBody.innerHTML = '';
+
+            if (filteredAppts.length === 0) {
+                emptyState.classList.remove('hidden');
+                eventCountText.innerText = `Không tìm thấy sự kiện.`;
+            } else {
+                emptyState.classList.add('hidden');
+                eventCountText.innerText = `Tìm thấy ${filteredAppts.length} sự kiện.`;
+
+                filteredAppts.forEach(app => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-blue-50/50 cursor-pointer transition-colors group";
+
+                    const startTimeStr = formatTimeAMPM(app.start);
+                    const endTimeStr = formatTimeAMPM(app.end);
+                    const startDateDetail = `${startTimeStr} - ${formatDate(app.start)}`;
+                    const endDateDetail = `${endTimeStr} - ${formatDate(app.end)}`;
+
+                    row.onclick = () => showDetail(app.name, startDateDetail, endDateDetail, app.location, app.isGroup, app.participants, app.start, app.end);
+
+                    const groupBadge = app.isGroup ? `<span class="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-700 uppercase tracking-wide">Nhóm</span>` : '';
+                    const reminderIcon = app.hasReminder ? `<span class="material-symbols-outlined text-[16px] text-amber-500 ml-auto" title="Có nhắc nhở">notifications_active</span>` : '';
+
+                    row.innerHTML = `
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-2 h-8 rounded-full ${app.isGroup ? 'bg-purple-500' : 'bg-blue-500'}"></div>
+                                        <span class="font-semibold text-slate-800 flex items-center">${app.name} ${groupBadge}</span>
+                                        ${reminderIcon}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-slate-600">${startTimeStr} <br/><span class="text-xs text-slate-400">${formatDate(app.start)}</span></td>
+                                <td class="px-6 py-4 text-slate-600">${endTimeStr} <br/><span class="text-xs text-slate-400">${formatDate(app.end)}</span></td>
+                                <td class="px-6 py-4"><span class="material-symbols-outlined text-[18px] mr-1">location_on</span> ${app.location}</td>
+                            `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        function formatTimeAMPM(dateString) {
+            return new Date(dateString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        const detailModal = document.getElementById('detailModal');
+        let currentSelectedApp = null;
+
+        function showDetail(name, startStr, endStr, location, isGroup, participants, rawStart, rawEnd) {
+            currentSelectedApp = { name: name, startTime: rawStart, endTime: rawEnd };
+
+            document.getElementById('detailName').innerText = name;
+            document.getElementById('detailStart').innerText = startStr;
+            document.getElementById('detailEnd').innerText = endStr;
+            document.getElementById('detailLocation').innerText = location;
+
+            const participantDiv = document.getElementById('detailParticipants');
+            if (isGroup) {
+                participantDiv.classList.remove('hidden');
+                const count = participants && participants.length > 0 ? participants.length : 1;
+                document.getElementById('detailParticipantCount').innerText = count + " thành viên đang tham gia";
+            } else {
+                participantDiv.classList.add('hidden');
+            }
+
+            detailModal.classList.remove('hidden');
+        }
+
+        async function deleteAppointment() {
+            const ok = await showAppDialog('Xác nhận Xóa', 'Bạn có chắc chắn muốn xóa lịch trình này không?', 'confirm');
+            if (!ok) return;
+
+            const token = localStorage.getItem('jwt_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const payload = {
+                    name: currentSelectedApp.name,
+                    location: "Không yêu cầu",
+                    startTime: currentSelectedApp.startTime,
+                    endTime: currentSelectedApp.endTime,
+                    isReminderSelected: false,
+                    reminderTime: currentSelectedApp.startTime,
+                    reminderMessage: "Không yêu cầu",
+                    reminderType: 0,
+                    isGroup: false
+                };
+
+                const response = await fetch('http://localhost:5207/api/Appointment/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('jwt_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    const errMsg = errData.message || JSON.stringify(errData.errors) || "Lỗi không xác định từ Server";
+                    throw new Error(errMsg);
+                }
+
+                const result = await response.json();
+                await showAppDialog('Thành công', result.message, 'success');
+                closeDetailModal();
+                window.location.reload();
+            } catch (error) {
+                await showAppDialog('Lỗi Xóa Lịch', error.message, 'error');
+            }
+        }
+
+        function closeDetailModal() { detailModal.classList.add('hidden'); }
+
+        const addModal = document.getElementById('appointmentModal');
+        const inputName = document.getElementById('appointmentName');
+        const inputLocation = document.getElementById('appointmentLocation');
+        const inputStart = document.getElementById('appointmentStart');
+        const inputEnd = document.getElementById('appointmentEnd');
+        const chkReminder = document.getElementById('set-reminder');
+
+        document.getElementById('btnOpenModal').addEventListener('click', () => addModal.classList.remove('hidden'));
+
+        const closeAddModal = () => {
+            addModal.classList.add('hidden');
+            inputName.value = ''; inputLocation.value = ''; inputStart.value = ''; inputEnd.value = ''; chkReminder.checked = false;
+            document.getElementById('is-group').checked = false;
+        };
+        document.getElementById('btnCloseIcon').addEventListener('click', closeAddModal);
+        document.getElementById('btnCancel').addEventListener('click', closeAddModal);
+
+        document.getElementById('btnSave').addEventListener('click', async () => {
+            const name = inputName.value.trim();
+            const startVal = inputStart.value;
+            const endVal = inputEnd.value;
+            const chkIsGroup = document.getElementById('is-group');
+
+            if (!name || !startVal || !endVal) {
+                await showAppDialog('Thiếu Thông Tin', 'Vui lòng điền đầy đủ: Tên, Giờ Bắt Đầu và Giờ Kết Thúc.', 'warning');
+                return;
+            }
+
+            if (new Date(startVal) >= new Date(endVal)) {
+                await showAppDialog('Lỗi Thời Gian', 'Thời gian kết thúc phải diễn ra sau thời gian bắt đầu!', 'error');
+                return;
+            }
+
+            const token = localStorage.getItem('jwt_token');
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const payload = {
+                name: name,
+                location: inputLocation.value || "Không có địa điểm",
+                startTime: startVal,
+                endTime: endVal,
+                isReminderSelected: chkReminder.checked,
+                reminderTime: startVal,
+                reminderMessage: "Nhắc nhở: " + name,
+                reminderType: 0,
+                isGroup: chkIsGroup ? chkIsGroup.checked : false,
+                ignoreGroupConflict: false // Mặc định là false
+            };
+
+            const fetchOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            };
+
+            try {
+                const API_BASE = 'http://localhost:5207/api/Appointment';
+                const response = await fetch(`${API_BASE}/add`, fetchOptions);
+
+                if (response.status === 401) {
+                    localStorage.removeItem('jwt_token');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                if (!response.ok && response.status !== 400 && response.status !== 409) {
+                    const errText = await response.text();
+                    throw new Error(`Server báo lỗi ${response.status}: ${errText}`);
+                }
+
+                const result = await response.json();
+
+                if (response.status === 400) {
+                    await showAppDialog('Lỗi Dữ Liệu', result.message, 'error');
+                }
+                else if (response.status === 409) {
+                    const ok = await showAppDialog('Trùng Lịch Hẹn', result.message, 'confirm');
+                    if (ok) {
+                        const replaceRes = await fetch(`${API_BASE}/replace`, fetchOptions);
+
+                        if (!replaceRes.ok) {
+                            const errData = await replaceRes.json().catch(() => ({ message: "Lỗi không xác định khi ghi đè" }));
+                            throw new Error(errData.message || "Lỗi khi ghi đè API");
+                        }
+
+                        const replaceData = await replaceRes.json();
+                        await showAppDialog('Thành công', replaceData.message, 'success');
+                        closeAddModal();
+                        window.location.reload();
+                    } else {
+                        inputStart.focus();
+                    }
+                }
+                else if (response.status === 200) {
+                    if (result.action === "ask_join_group") {
+                        const ok = await showAppDialog('Phát Hiện Nhóm', result.message, 'confirm');
+                        if (ok) {
+                            const joinRes = await fetch(`${API_BASE}/join-group`, fetchOptions);
+                            const joinData = await joinRes.json();
+                            await showAppDialog('Gia Nhập Nhóm', joinData.message, 'success');
+                            closeAddModal();
+                            window.location.reload();
+                        } else {
+                            payload.ignoreGroupConflict = true;
+
+                            const forceFetchOptions = {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(payload)
+                            };
+
+                            const forceRes = await fetch(`${API_BASE}/add`, forceFetchOptions);
+                            if (forceRes.ok) {
+                                await showAppDialog('Lưu Lịch', 'Đã bỏ qua họp nhóm. Lưu thành lịch cá nhân thành công.', 'success');
+                                closeAddModal();
+                                window.location.reload();
+                            } else {
+                                await showAppDialog('Lỗi', 'Không thể lưu lịch cá nhân!', 'error');
+                            }
+                        }
+                    } else {
+                        await showAppDialog('Thành công', result.message, 'success');
+                        closeAddModal();
+                        window.location.reload();
+                    }
+                }
+            } catch (error) {
+                console.error("Lỗi chi tiết:", error);
+                await showAppDialog('Lỗi Hệ Thống', error.message, 'error');
+            }
+        });
+
+        fetchAppointmentsFromServer();
+
+        const discoverModal = document.getElementById('discoverModal');
+        const discoverList = document.getElementById('discoverList');
+
+        function closeDiscoverModal() {
+            discoverModal.classList.add('hidden');
+        }
+
+        async function openDiscoverModal() {
+            discoverModal.classList.remove('hidden');
+            discoverList.innerHTML = '<p class="text-center text-slate-500 text-sm py-4">Đang tìm các nhóm trống...</p>';
+
+            const token = localStorage.getItem('jwt_token');
+            try {
+                const response = await fetch('http://localhost:5207/api/Appointment/available-groups', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const groups = await response.json();
+                    if (groups.length === 0) {
+                        discoverList.innerHTML = `
+                            <div class="py-8 flex flex-col items-center justify-center text-slate-400">
+                                <span class="material-symbols-outlined text-4xl mb-2">groups</span>
+                                <p>Hiện chưa có cuộc họp nhóm nào để tham gia.</p>
+                            </div>`;
+                        return;
+                    }
+
+                    discoverList.innerHTML = '';
+                    groups.forEach(g => {
+                        const start = new Date(g.startTime);
+                        const end = new Date(g.endTime);
+                        const timeStr = `${formatTimeAMPM(g.startTime)} - ${formatTimeAMPM(g.endTime)}`;
+                        const dateStr = formatDate(g.startTime);
+
+                        const card = document.createElement('div');
+                        card.className = "p-4 rounded-xl border border-slate-200 bg-white hover:border-purple-300 hover:shadow-sm transition-all flex flex-col gap-2";
+                        card.innerHTML = `
+                            <div class="flex justify-between items-start">
+                                <h3 class="font-bold text-slate-800 text-[15px]">${g.name}</h3>
+                                <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[10px] font-bold">${g.participantCount} thành viên</span>
+                            </div>
+                            <div class="flex flex-col gap-1 mt-1 text-xs text-slate-600">
+                                <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[14px] text-slate-400">calendar_today</span> ${dateStr}</div>
+                                <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[14px] text-slate-400">schedule</span> ${timeStr}</div>
+                                <div class="flex items-center gap-2"><span class="material-symbols-outlined text-[14px] text-slate-400">location_on</span> ${g.location}</div>
+                            </div>
+                            <div class="mt-2 text-[11px] text-purple-600 italic bg-purple-50 p-2 rounded border border-purple-100/50">
+                                * Tạo sự kiện trùng Tên và Giờ để xin tham gia.
+                            </div>
+                        `;
+                        discoverList.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                discoverList.innerHTML = '<p class="text-center text-red-500 text-sm">Lỗi khi tải dữ liệu nhóm.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
