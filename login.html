@@ -91,7 +91,6 @@
         const errorMsg = document.getElementById('errorMsg');
         const successMsg = document.getElementById('successMsg');
 
-        // Hàm chuyển đổi qua lại giữa Đăng nhập và Đăng ký
         function toggleMode() {
             isLoginMode = !isLoginMode;
             errorMsg.classList.add('hidden');
@@ -113,7 +112,6 @@
             }
         }
 
-        // Hàm gọi API
         async function handleAction() {
             const username = txtUsername.value.trim();
             const password = txtPassword.value.trim();
@@ -131,7 +129,6 @@
             const payload = { UserName: username, Password: password };
 
             try {
-                // Tắt nút tạm thời để tránh click nhiều lần
                 btnAction.disabled = true;
                 btnAction.classList.add('opacity-70');
 
@@ -148,17 +145,14 @@
                 }
 
                 if (isLoginMode) {
-                    // ĐĂNG NHẬP THÀNH CÔNG -> Lưu Token vào két sắt LocalStorage
                     localStorage.setItem('jwt_token', data.token);
                     localStorage.setItem('username', data.userName);
                     
                     successMsg.innerText = "Đăng nhập thành công! Đang chuyển hướng...";
                     successMsg.classList.remove('hidden');
                     
-                    // Chuyển sang trang chính sau 1 giây
                     setTimeout(() => { window.location.href = 'index_final.html'; }, 1000);
                 } else {
-                    // ĐĂNG KÝ THÀNH CÔNG -> Bật qua form Login
                     successMsg.innerText = "Đăng ký thành công! Vui lòng đăng nhập.";
                     successMsg.classList.remove('hidden');
                     setTimeout(() => { toggleMode(); }, 1500);
